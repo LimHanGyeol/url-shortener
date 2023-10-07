@@ -34,7 +34,7 @@ class ShortenKeyGeneratorTest(
         val actual = sut.generate(timestamp)
 
         // Assert
-        assertThat(actual).isEqualTo("${timestamp}0300")
+        assertThat(actual).isEqualTo("${timestamp}0300".toLong())
     }
 
     @Test

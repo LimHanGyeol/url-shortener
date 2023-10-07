@@ -1,7 +1,12 @@
 package com.tommy.urlshortener.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ninjasquad.springmockk.MockkBean
 import com.tommy.urlshortener.dto.ShortUrlRequest
+import com.tommy.urlshortener.dto.ShortUrlResponse
+import com.tommy.urlshortener.service.UrlShortService
+import io.mockk.every
+import io.mockk.verify
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -19,15 +24,18 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 class ShortUrlControllerTest @Autowired constructor(
     private val mockMvc: MockMvc,
     private val objectMapper: ObjectMapper,
+    @MockkBean private val urlShortService: UrlShortService,
 ) {
 
     @Test
     @DisplayName("입력받은 원본 URL을 단축하여 ShortUrl을 리턴한다.")
-    fun shortUrl() { // Arrange
-        val originUrl = "https://github.com/LimHanGyeol/url-shortener"
+    fun shortUrl() {
+        // Arrange
+        val originUrl = "https://github.com/LimHanGyeol/url-shortener/blob/master/src/main/kotlin/com/tommy/urlshortener/UrlShortenerApplication.kt"
         val shortUrlRequest = ShortUrlRequest(originUrl)
+        val shortUrlResponse = ShortUrlResponse("EysI9lHD")
 
-        // TODO: url service stub
+        every { urlShortService.shorten(shortUrlRequest) } returns shortUrlResponse
 
         // Act & Assert
         mockMvc.perform(
@@ -35,8 +43,10 @@ class ShortUrlControllerTest @Autowired constructor(
         )
             .andDo(print())
             .andExpect(status().isOk)
-            .andExpect(jsonPath("$.shortUrl").value(""))
+            .andExpect(jsonPath("$.shortUrl").value(shortUrlResponse.shortUrl))
 
-        // TODO: url service verify
+        verify {
+            urlShortService.shorten(shortUrlRequest)
+        }
     }
 }
