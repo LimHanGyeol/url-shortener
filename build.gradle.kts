@@ -7,6 +7,7 @@ plugins {
     kotlin("plugin.spring") version "1.8.22"
     kotlin("plugin.jpa") version "1.8.22"
     kotlin("plugin.allopen") version "1.8.22"
+    kotlin("kapt") version "1.8.22"
 }
 
 group = "com.tommy"
@@ -25,6 +26,9 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
+    implementation("com.querydsl:querydsl-jpa:5.0.0:jakarta")
+
+    kapt ("com.querydsl:querydsl-apt:5.0.0:jakarta")
 
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
@@ -51,4 +55,12 @@ allOpen {
     annotation("jakarta.persistence.Entity")
     annotation("jakarta.persistence.Embeddable")
     annotation("jakarta.persistence.MappedSuperclass")
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs("build/generated/sources/annotationProcessor/java/main")
+        }
+    }
 }
