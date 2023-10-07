@@ -8,10 +8,10 @@ import java.util.concurrent.TimeUnit
 class ShortenKeyGenerator(
     private val redisService: RedisService,
 ) {
-    fun generate(timestamp: Long): String { // TODO: 동시성 문제 검토 필요
+    fun generate(timestamp: Long): Long { // TODO: 동시성 문제 검토 필요
         val sequentialNumber = incrementSequentialNumber()
 
-        return "$timestamp${String.format("%04d", sequentialNumber)}"
+        return "$timestamp${String.format("%04d", sequentialNumber)}".toLong()
     }
 
     private fun incrementSequentialNumber(): Int {
