@@ -5,7 +5,9 @@ import com.ninjasquad.springmockk.MockkBean
 import com.tommy.urlshortener.dto.ShortUrlRequest
 import com.tommy.urlshortener.dto.ShortUrlResponse
 import com.tommy.urlshortener.service.UrlShortService
+import com.tommy.urlshortener.service.UrlValidator
 import io.mockk.every
+import io.mockk.justRun
 import io.mockk.verify
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -24,6 +26,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 class ShortUrlControllerTest @Autowired constructor(
     private val mockMvc: MockMvc,
     private val objectMapper: ObjectMapper,
+    @MockkBean private val urlValidator: UrlValidator,
     @MockkBean private val urlShortService: UrlShortService,
 ) {
 
@@ -35,6 +38,7 @@ class ShortUrlControllerTest @Autowired constructor(
         val shortUrlRequest = ShortUrlRequest(originUrl)
         val shortUrlResponse = ShortUrlResponse("EysI9lHD")
 
+        justRun { urlValidator.validate(shortUrlRequest.originUrl) }
         every { urlShortService.shorten(shortUrlRequest) } returns shortUrlResponse
 
         // Act & Assert

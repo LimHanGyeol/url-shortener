@@ -28,13 +28,14 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("com.querydsl:querydsl-jpa:5.0.0:jakarta")
 
-    kapt ("com.querydsl:querydsl-apt:5.0.0:jakarta")
-
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("io.github.oshai:kotlin-logging-jvm:5.1.0")
+    implementation("commons-validator:commons-validator:1.7")
 
     implementation("com.h2database:h2:2.2.224")
+
+    kapt ("com.querydsl:querydsl-apt:5.0.0:jakarta")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("com.ninja-squad:springmockk:3.1.1")
