@@ -16,6 +16,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
@@ -43,7 +44,9 @@ class ShortUrlControllerTest @Autowired constructor(
 
         // Act & Assert
         mockMvc.perform(
-            post("/shorten").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(shortUrlRequest))
+            post("/shorten")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(shortUrlRequest))
         )
             .andDo(print())
             .andExpect(status().isOk)
@@ -52,5 +55,20 @@ class ShortUrlControllerTest @Autowired constructor(
         verify {
             urlShortService.shorten(shortUrlRequest)
         }
+    }
+
+    @Test
+    @DisplayName("단축 URL을 입력 받을 경우 원본 URL로 Redirect 한다.")
+    fun redirect() {
+        // Arrange
+        val shortUrl = "EysI9lHD"
+
+        // Act & Assert
+        mockMvc.perform(
+            get("/{shortUrl}", shortUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isMovedPermanently)
     }
 }
