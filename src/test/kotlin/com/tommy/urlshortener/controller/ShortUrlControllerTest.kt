@@ -2,8 +2,10 @@ package com.tommy.urlshortener.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ninjasquad.springmockk.MockkBean
+import com.tommy.urlshortener.dto.OriginUrlResponse
 import com.tommy.urlshortener.dto.ShortUrlRequest
 import com.tommy.urlshortener.dto.ShortUrlResponse
+import com.tommy.urlshortener.service.UrlRedirectService
 import com.tommy.urlshortener.service.UrlShortService
 import com.tommy.urlshortener.service.UrlValidator
 import io.mockk.every
@@ -13,12 +15,14 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
+import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.header
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
@@ -29,6 +33,7 @@ class ShortUrlControllerTest @Autowired constructor(
     private val objectMapper: ObjectMapper,
     @MockkBean private val urlValidator: UrlValidator,
     @MockkBean private val urlShortService: UrlShortService,
+    @MockkBean private val urlRedirectService: UrlRedirectService,
 ) {
 
     @Test
@@ -62,6 +67,10 @@ class ShortUrlControllerTest @Autowired constructor(
     fun redirect() {
         // Arrange
         val shortUrl = "EysI9lHD"
+        val originUrl = "https://github.com/LimHanGyeol/url-shortener/blob/master/src/main/kotlin/com/tommy/urlshortener/UrlShortenerApplication.kt"
+        val originUrlResponse = OriginUrlResponse(originUrl)
+
+        every { urlRedirectService.findOriginUrl(shortUrl) } returns originUrlResponse
 
         // Act & Assert
         mockMvc.perform(
@@ -70,5 +79,10 @@ class ShortUrlControllerTest @Autowired constructor(
         )
             .andDo(print())
             .andExpect(status().isMovedPermanently)
+            .andExpect(header().string(HttpHeaders.LOCATION, originUrl))
+
+        verify {
+            urlRedirectService.findOriginUrl(shortUrl)
+        }
     }
 }
