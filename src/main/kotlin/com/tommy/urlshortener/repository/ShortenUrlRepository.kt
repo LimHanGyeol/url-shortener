@@ -10,6 +10,7 @@ interface ShortenUrlRepository : JpaRepository<ShortenUrl, Long>, ShortenUrlRepo
 
 interface ShortenUrlRepositoryCustom {
     fun findByOriginUrl(originUrl: String): ShortenUrl?
+    fun findByShortUrl(shortUrl: String): ShortenUrl?
 }
 
 class ShortenUrlRepositoryImpl(
@@ -21,6 +22,13 @@ class ShortenUrlRepositoryImpl(
         return queryFactory
             .selectFrom(shortenUrl)
             .where(shortenUrl.originUrl.eq(originUrl))
+            .fetchOne()
+    }
+
+    override fun findByShortUrl(shortUrl: String): ShortenUrl? {
+        return queryFactory
+            .selectFrom(shortenUrl)
+            .where(shortenUrl.shortUrl.eq(shortUrl))
             .fetchOne()
     }
 }

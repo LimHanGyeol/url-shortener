@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.context.annotation.Import
 import org.springframework.test.context.ActiveProfiles
+import java.util.UUID
 
 @ActiveProfiles("test")
 @Import(UrlShortenerConfig::class)
@@ -28,6 +29,22 @@ class ShortenUrlRepositoryTest @Autowired constructor(
 
         // Act
         val actual = sut.findByOriginUrl(originUrl)
+
+        // Assert
+        assertThat(actual?.originUrl).isEqualTo(shortenUrl.originUrl)
+    }
+
+    @Test
+    @DisplayName("shortUrl이 주어질 경우 ShortenUrl Entity를 조회한다.")
+    fun `find by short url`() {
+        // Arrange
+        val shortUrl = "EysI9lHD"
+        val shortenUrl = ShortenUrl(shortenKey = 1696691294L, originUrl = UUID.randomUUID().toString(), shortUrl = shortUrl)
+
+        sut.save(shortenUrl)
+
+        // Act
+        val actual = sut.findByShortUrl(shortUrl)
 
         // Assert
         assertThat(actual?.shortUrl).isEqualTo(shortenUrl.shortUrl)
