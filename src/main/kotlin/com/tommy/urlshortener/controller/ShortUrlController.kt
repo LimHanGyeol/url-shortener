@@ -3,6 +3,7 @@ package com.tommy.urlshortener.controller
 import com.tommy.urlshortener.dto.RedirectResponseEntity
 import com.tommy.urlshortener.dto.ShortUrlRequest
 import com.tommy.urlshortener.dto.ShortUrlResponse
+import com.tommy.urlshortener.service.UrlRedirectService
 import com.tommy.urlshortener.service.UrlShortService
 import com.tommy.urlshortener.service.UrlValidator
 import org.springframework.validation.annotation.Validated
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController
 class ShortUrlController(
     private val urlValidator: UrlValidator,
     private val urlShortService: UrlShortService,
+    private val urlRedirectService: UrlRedirectService,
 ) {
 
     @PostMapping("/shorten")
@@ -26,6 +28,7 @@ class ShortUrlController(
 
     @GetMapping("/{shortUrl}")
     fun redirect(@PathVariable shortUrl: String): RedirectResponseEntity {
-        return RedirectResponseEntity("EysI9lHD")
+        val originUrlResponse = urlRedirectService.findOriginUrl(shortUrl)
+        return RedirectResponseEntity(originUrlResponse.originUrl)
     }
 }
