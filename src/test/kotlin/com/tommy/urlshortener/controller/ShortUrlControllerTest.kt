@@ -54,7 +54,7 @@ class ShortUrlControllerTest @Autowired constructor(
                 .content(objectMapper.writeValueAsString(shortUrlRequest))
         )
             .andDo(print())
-            .andExpect(status().isOk)
+            .andExpect(status().isCreated)
             .andExpect(jsonPath("$.shortUrl").value(shortUrlResponse.shortUrl))
 
         verify {
@@ -74,7 +74,7 @@ class ShortUrlControllerTest @Autowired constructor(
 
         // Act & Assert
         mockMvc.perform(
-            get("/{shortUrl}", shortUrl)
+            get("/redirect/{shortUrl}", shortUrl)
                 .contentType(MediaType.APPLICATION_JSON)
         )
             .andDo(print())
