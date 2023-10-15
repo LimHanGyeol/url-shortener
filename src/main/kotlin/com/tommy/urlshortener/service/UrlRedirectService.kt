@@ -1,23 +1,40 @@
 package com.tommy.urlshortener.service
 
+import com.tommy.urlshortener.common.RedisService
 import com.tommy.urlshortener.dto.OriginUrlResponse
 import com.tommy.urlshortener.repository.ShortenUrlRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.util.concurrent.TimeUnit
 
 @Service
 @Transactional(readOnly = true)
 class UrlRedirectService(
+    private val redisService: RedisService,
     private val shortenUrlRepository: ShortenUrlRepository,
 ) {
     private val logger = KotlinLogging.logger { }
 
     fun findOriginUrl(shortUrl: String): OriginUrlResponse {
-        // TODO: Cache 조회 후 없으면 DB Find
         logger.debug { "shortUrl: [$shortUrl]" }
-        val shortenUrl = shortenUrlRepository.findByShortUrl(shortUrl) ?: throw RuntimeException() // TODO: NotFoundException
 
-        return OriginUrlResponse(shortenUrl.originUrl)
+        val redisKey = "$REDIS_KEY_PREFIX$shortUrl"
+        val cachedOriginUrl = redisService.get<String>(redisKey)
+
+        return cachedOriginUrl?.let {
+            OriginUrlResponse(it)
+        } ?: run {
+            val shortenUrl = shortenUrlRepository.findByShortUrl(shortUrl) ?: throw RuntimeException() // TODO: NotFoundException
+            val originUrl = shortenUrl.originUrl
+
+            redisService.set(redisKey, originUrl, 3L, TimeUnit.DAYS)
+
+            OriginUrlResponse(originUrl)
+        }
+    }
+
+    companion object {
+        private const val REDIS_KEY_PREFIX = "redirect:"
     }
 }
