@@ -7,13 +7,13 @@ import com.tommy.urlshortener.service.UrlRedirectService
 import com.tommy.urlshortener.service.UrlShortService
 import com.tommy.urlshortener.service.UrlValidator
 import org.springframework.http.HttpStatus
-import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
+import jakarta.validation.Valid
 
 @RestController
 class ShortUrlController(
@@ -24,7 +24,7 @@ class ShortUrlController(
 
     @PostMapping("/shorten")
     @ResponseStatus(HttpStatus.CREATED)
-    fun shortUrl(@RequestBody @Validated shortUrlRequest: ShortUrlRequest): ShortUrlResponse {
+    fun shortUrl(@RequestBody @Valid shortUrlRequest: ShortUrlRequest): ShortUrlResponse {
         urlValidator.validate(shortUrlRequest.originUrl)
         return urlShortService.shorten(shortUrlRequest)
     }

@@ -28,7 +28,17 @@ class DefaultControllerAdvice {
      */
     @ExceptionHandler(BaseException::class)
     fun handleBaseException(e: BaseException): ResponseEntity<ErrorResult> {
-        val formattedMessage = MessageFormat.format(e.default, *e.args)
+        // vararg는 Java에서 배열로 처리된다. 그래서 args는 Array<Any?>로 전다로딘다.
+        // args 자체가 배열로 컴파일된다. 내부 원소 또한 배열일 수 있어서 포맷팅을 위해선 두 단계의 배열을 풀어줘야한다.
+        // TODO: 가변인자를 추가 배열로 넘길 경우 확인하기
+        val arguments = e.args.flatMap {
+            when (it) {
+                is Array<*> -> it.toList()
+                else -> listOf(it)
+            }
+        }.toTypedArray()
+
+        val formattedMessage = MessageFormat.format(e.default, *arguments)
 
         logger.error { formattedMessage }
 
