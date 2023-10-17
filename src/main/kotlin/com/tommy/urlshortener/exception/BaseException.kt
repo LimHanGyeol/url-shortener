@@ -5,4 +5,4 @@ open class BaseException(
     val code: String,
     val default: String = "",
     vararg val args: Any?,
-) : RuntimeException(code)
+) : RuntimeException()
