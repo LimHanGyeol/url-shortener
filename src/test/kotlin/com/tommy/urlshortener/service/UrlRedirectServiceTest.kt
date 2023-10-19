@@ -2,6 +2,7 @@ package com.tommy.urlshortener.service
 
 import com.tommy.urlshortener.common.RedisService
 import com.tommy.urlshortener.domain.ShortenUrl
+import com.tommy.urlshortener.exception.NotFoundException
 import com.tommy.urlshortener.repository.ShortenUrlRepository
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
@@ -12,6 +13,7 @@ import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import java.util.UUID
 import java.util.concurrent.TimeUnit
@@ -48,6 +50,20 @@ class UrlRedirectServiceTest(
             shortenUrlRepository.findByShortUrl(shortUrl)
             redisService.set(redisKey, shortenUrl.originUrl, 3L, TimeUnit.DAYS)
         }
+    }
+
+    @Test
+    @DisplayName("잘못된 short url로 origin url을 찾을 경우 NotFoundException이 발생한다.")
+    fun `not found origin url`() {
+        // Arrange
+        val shortUrl = UUID.randomUUID().toString()
+        val redisKey = "$REDIS_KEY_PREFIX$shortUrl"
+
+        every { redisService.get<String>(redisKey) } returns null
+        every { shortenUrlRepository.findByShortUrl(shortUrl) } returns null
+
+        // Act & Assert
+        assertThrows<NotFoundException> { sut.findOriginUrl(shortUrl) }
     }
 
     companion object {
