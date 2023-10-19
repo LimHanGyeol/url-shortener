@@ -1,6 +1,7 @@
 package com.tommy.urlshortener.service
 
 import com.tommy.urlshortener.common.RedisService
+import com.tommy.urlshortener.exception.TooManyRequestException
 import org.springframework.stereotype.Component
 import java.util.concurrent.TimeUnit
 
@@ -18,7 +19,7 @@ class ShortenKeyGenerator(
         val incrementedValue = redisService.increment(REDIS_KEY, 1L)
 
         if (incrementedValue > MAX_SEQUENTIAL) {
-            throw RuntimeException() // TODO: 초당 최대 생성수 초과 잠시후 재시도 권유
+            throw TooManyRequestException(MAX_SEQUENTIAL_NUMBER_EXCEED, incrementedValue)
         }
         redisService.set(REDIS_KEY, incrementedValue, 5, TimeUnit.SECONDS)
 
@@ -28,5 +29,7 @@ class ShortenKeyGenerator(
     companion object {
         private const val REDIS_KEY = "shortener:sequential"
         private const val MAX_SEQUENTIAL = 9999
+
+        private val MAX_SEQUENTIAL_NUMBER_EXCEED = "maxSequential.exceed" to "current sequential number: {0}"
     }
 }
