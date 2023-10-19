@@ -1,9 +1,13 @@
 package com.tommy.urlshortener.service
 
+import com.tommy.urlshortener.exception.InternalServerException
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Component
 
 @Component
 class ShortUrlGenerator {
+
+    private val logger = KotlinLogging.logger { }
 
     fun generate(shortenKey: Long): String {
         if (shortenKey == 0L) {
@@ -22,7 +26,8 @@ class ShortUrlGenerator {
         val generatedUrl = stringBuilder.reverse().toString()
 
         if (generatedUrl.length > URL_LENGTH_LIMIT) {
-            throw RuntimeException("단축된 URL이 8자 이상입니다. 관리자에게 문의해주세요.")
+            logger.error { "generated url limit length exceed: ${generatedUrl.length}" }
+            throw InternalServerException(URL_LENGTH_LIMIT_EXCEED, generatedUrl, generatedUrl.length)
         }
 
         return generatedUrl
@@ -32,5 +37,7 @@ class ShortUrlGenerator {
         private const val BASE62 = 62
         private const val URL_LENGTH_LIMIT = 8
         private val BASE62_CHARSET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".toCharArray()
+
+        private val URL_LENGTH_LIMIT_EXCEED = "shortUrl.length.limit.exceed" to "current short url: {0}, length: {1}"
     }
 }

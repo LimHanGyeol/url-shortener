@@ -40,7 +40,7 @@ class DefaultControllerAdvice {
 
         val formattedMessage = MessageFormat.format(e.default, *arguments)
 
-        logger.error { formattedMessage }
+        logger.error(e) { formattedMessage }
 
         val errorResult = ErrorResult(
             code = e.code,
