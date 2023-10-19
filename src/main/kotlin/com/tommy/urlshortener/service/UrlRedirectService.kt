@@ -2,6 +2,7 @@ package com.tommy.urlshortener.service
 
 import com.tommy.urlshortener.common.RedisService
 import com.tommy.urlshortener.dto.OriginUrlResponse
+import com.tommy.urlshortener.exception.NotFoundException
 import com.tommy.urlshortener.repository.ShortenUrlRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
@@ -25,7 +26,7 @@ class UrlRedirectService(
         return cachedOriginUrl?.let {
             OriginUrlResponse(it)
         } ?: run {
-            val shortenUrl = shortenUrlRepository.findByShortUrl(shortUrl) ?: throw RuntimeException() // TODO: NotFoundException
+            val shortenUrl = shortenUrlRepository.findByShortUrl(shortUrl) ?: throw NotFoundException(SHORTEN_URL_NOT_FOUND, shortUrl)
             val originUrl = shortenUrl.originUrl
 
             redisService.set(redisKey, originUrl, 3L, TimeUnit.DAYS)
@@ -36,5 +37,7 @@ class UrlRedirectService(
 
     companion object {
         private const val REDIS_KEY_PREFIX = "redirect:"
+
+        private val SHORTEN_URL_NOT_FOUND = "shortenUrl.notFound" to "shortenUrl not found. shortUrl: {0}"
     }
 }
