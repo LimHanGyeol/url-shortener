@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit
 class ShortenKeyGenerator(
     private val redisService: RedisService,
 ) {
-    fun generate(timestamp: Long): Long { // TODO: 동시성 문제 검토 필요
+    fun generate(timestamp: Long): Long {
         val sequentialNumber = incrementSequentialNumber()
 
         return "$timestamp${String.format("%04d", sequentialNumber)}".toLong()
@@ -20,8 +20,9 @@ class ShortenKeyGenerator(
 
         if (incrementedValue > MAX_SEQUENTIAL) {
             throw TooManyRequestException(MAX_SEQUENTIAL_NUMBER_EXCEED, incrementedValue)
+        } else {
+            redisService.set(REDIS_KEY, incrementedValue, 5, TimeUnit.SECONDS)
         }
-        redisService.set(REDIS_KEY, incrementedValue, 5, TimeUnit.SECONDS)
 
         return incrementedValue
     }
