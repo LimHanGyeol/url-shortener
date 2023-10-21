@@ -1,6 +1,7 @@
 package com.tommy.urlshortener.service
 
 import com.tommy.urlshortener.common.RedisService
+import com.tommy.urlshortener.common.StringUtil
 import com.tommy.urlshortener.domain.ShortenUrl
 import com.tommy.urlshortener.exception.NotFoundException
 import com.tommy.urlshortener.repository.ShortenUrlRepository
@@ -30,8 +31,9 @@ class UrlRedirectServiceTest(
     @DisplayName("입력받은 short url로 origin url을 찾는다.")
     fun `find origin url`() {
         // Arrange
+        val originUrl = UUID.randomUUID().toString()
         val shortUrl = "EysI9lHD"
-        val shortenUrl = ShortenUrl(shortenKey = 1696691294L, originUrl = UUID.randomUUID().toString(), shortUrl = shortUrl)
+        val shortenUrl = ShortenUrl(shortenKey = 1696691294L, originUrl = originUrl, hashedOriginUrl = StringUtil.hashToHex(originUrl), shortUrl = shortUrl)
 
         val redisKey = "$REDIS_KEY_PREFIX$shortUrl"
 

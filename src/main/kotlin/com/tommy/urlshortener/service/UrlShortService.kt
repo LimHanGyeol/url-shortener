@@ -1,6 +1,7 @@
 package com.tommy.urlshortener.service
 
 import com.tommy.urlshortener.common.RedisService
+import com.tommy.urlshortener.common.StringUtil
 import com.tommy.urlshortener.domain.ShortenUrl
 import com.tommy.urlshortener.dto.ShortUrlRequest
 import com.tommy.urlshortener.dto.ShortUrlResponse
@@ -44,11 +45,13 @@ class UrlShortService(
     private fun saveShortenUrl(originUrl: String): ShortenUrl {
         val timestamp = Instant.now().epochSecond
 
+        val hashedOriginUrl = StringUtil.hashToHex(originUrl)
+
         val shortenKey = shortenKeyGenerator.generate(timestamp)
         val generatedShortUrl = shortUrlGenerator.generate(shortenKey)
 
         return shortenUrlRepository.save(
-            ShortenUrl(shortenKey = shortenKey, originUrl = originUrl, shortUrl = generatedShortUrl)
+            ShortenUrl(shortenKey = shortenKey, originUrl = originUrl, hashedOriginUrl = hashedOriginUrl, shortUrl = generatedShortUrl)
         )
     }
 

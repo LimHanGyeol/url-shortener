@@ -1,5 +1,6 @@
 package com.tommy.urlshortener.repository
 
+import com.tommy.urlshortener.common.StringUtil
 import com.tommy.urlshortener.config.UrlShortenerConfig
 import com.tommy.urlshortener.domain.ShortenUrl
 import org.assertj.core.api.Assertions.assertThat
@@ -23,7 +24,7 @@ class ShortenUrlRepositoryTest @Autowired constructor(
     fun `find by origin url`() {
         // Arrange
         val originUrl = "https://github.com/LimHanGyeol/url-shortener/blob/master/src/main/kotlin/com/tommy/urlshortener/UrlShortenerApplication.kt"
-        val shortenUrl = ShortenUrl(shortenKey = 1696691294L, originUrl = originUrl, shortUrl = "EysI9lHD")
+        val shortenUrl = ShortenUrl(shortenKey = 1696691294L, originUrl = originUrl, hashedOriginUrl = StringUtil.hashToHex(originUrl), shortUrl = "EysI9lHD")
 
         sut.save(shortenUrl)
 
@@ -38,8 +39,9 @@ class ShortenUrlRepositoryTest @Autowired constructor(
     @DisplayName("shortUrl이 주어질 경우 ShortenUrl Entity를 조회한다.")
     fun `find by short url`() {
         // Arrange
+        val originUrl = UUID.randomUUID().toString()
         val shortUrl = "EysI9lHD"
-        val shortenUrl = ShortenUrl(shortenKey = 1696691294L, originUrl = UUID.randomUUID().toString(), shortUrl = shortUrl)
+        val shortenUrl = ShortenUrl(shortenKey = 1696691294L, originUrl = originUrl, hashedOriginUrl = StringUtil.hashToHex(originUrl), shortUrl = shortUrl)
 
         sut.save(shortenUrl)
 
