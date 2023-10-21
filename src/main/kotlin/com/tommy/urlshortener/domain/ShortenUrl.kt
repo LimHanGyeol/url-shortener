@@ -15,8 +15,11 @@ class ShortenUrl(
     val shortenKey: Long,
 
     @Lob
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", unique = true)
     val originUrl: String,
+
+    @Column(unique = true)
+    val hashedOriginUrl: String,
 
     val shortUrl: String,
 ) : BaseEntity() {
@@ -39,6 +42,6 @@ class ShortenUrl(
     }
 
     override fun toString(): String {
-        return "ShortenUrl(shortenKey=$shortenKey, originUrl='$originUrl', shortUrl='$shortUrl', id=$id)"
+        return "ShortenUrl(shortenKey=$shortenKey, originUrl='$originUrl', hashedOriginUrl='$hashedOriginUrl', shortUrl='$shortUrl', id=$id)"
     }
 }
