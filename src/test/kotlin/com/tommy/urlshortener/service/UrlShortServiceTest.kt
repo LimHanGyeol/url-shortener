@@ -1,6 +1,7 @@
 package com.tommy.urlshortener.service
 
 import com.tommy.urlshortener.common.RedisService
+import com.tommy.urlshortener.common.StringUtil
 import com.tommy.urlshortener.domain.ShortenUrl
 import com.tommy.urlshortener.dto.ShortUrlRequest
 import com.tommy.urlshortener.repository.ShortenUrlRepository
@@ -36,7 +37,7 @@ class UrlShortServiceTest(
 
         val shortenKey = 1696691294L
         val generatedShortUrl = "EysI9lHD"
-        val shortenUrl = ShortenUrl(shortenKey = shortenKey, originUrl = originUrl, shortUrl = generatedShortUrl)
+        val shortenUrl = ShortenUrl(shortenKey = shortenKey, originUrl = originUrl, hashedOriginUrl = StringUtil.hashToHex(originUrl), shortUrl = generatedShortUrl)
 
         every { redisService.get<String>(redisKey) } returns null
         every { shortenUrlRepository.findByOriginUrl(originUrl) } returns null
