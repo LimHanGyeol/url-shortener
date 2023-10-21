@@ -27,13 +27,14 @@ class UrlShortService(
         val originUrl = shortUrlRequest.originUrl
         logger.debug { "URL Shorten - originUrl: [$originUrl]" }
 
-        val redisKey = "$REDIS_KEY_PREFIX$originUrl"
+        val hashedOriginUrl = StringUtil.hashToHex(originUrl)
+        val redisKey = "$REDIS_KEY_PREFIX$hashedOriginUrl"
         val cachedShortUrl = redisService.get<String>(redisKey)
 
         return cachedShortUrl?.let {
             ShortUrlResponse(it)
         } ?: run {
-            val shortenUrl = shortenUrlRepository.findByOriginUrl(originUrl) ?: saveShortenUrl(originUrl)
+            val shortenUrl = shortenUrlRepository.findByOriginUrl(hashedOriginUrl) ?: saveShortenUrl(originUrl)
             val shortUrl = shortenUrl.shortUrl
 
             redisService.set(redisKey, shortUrl, 3L, TimeUnit.DAYS)

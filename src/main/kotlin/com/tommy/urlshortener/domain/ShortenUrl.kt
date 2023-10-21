@@ -19,7 +19,7 @@ class ShortenUrl(
     val originUrl: String,
 
     @Column(unique = true)
-    val hashedOriginUrl: String,
+    val hashedOriginUrl: String, // TODO: Index 지정
 
     val shortUrl: String,
 ) : BaseEntity() {
