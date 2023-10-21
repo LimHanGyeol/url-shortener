@@ -16,4 +16,3 @@ class RedirectResponseEntity(location: String)
         }
     }
 }
-

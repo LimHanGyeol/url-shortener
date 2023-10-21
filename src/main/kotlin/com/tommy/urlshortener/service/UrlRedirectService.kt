@@ -17,6 +17,7 @@ class UrlRedirectService(
 ) {
     private val logger = KotlinLogging.logger { }
 
+    @Transactional
     fun findOriginUrl(shortUrl: String): OriginUrlResponse {
         logger.debug { "shortUrl: [$shortUrl]" }
 
