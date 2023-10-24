@@ -6,10 +6,11 @@ URL Shortener는 긴 URL을 짧은 링크로 변환하고, 짧은 링크를 원�
 
 ## 주요 기능
 1. URL 단축: 주어진 원본 URL을 짧은 링크로 변환합니다.
-2. URL 리다이렉션: 단축된 URL을 원본 URL로 리다이렉트합니다.
+2. URL 리다이렉트: 단축된 URL을 원본 URL로 리다이렉트합니다.
 
-## Sequence Diagram
-1. URL 단축
+## 설계 및 아키텍처
+### 1. URL 단축
+#### Sequence Diagram
 ```mermaid
 sequenceDiagram
 actor user as Client
@@ -36,8 +37,12 @@ else Cache에 (Key: 원본 URL, Value: ShortURL)이 없을 경우
     shortener-->>user: ShortURL 응답
 end
 ```
+- URL 단축 길이 8자 이내로 생성 
+- 동일한 URL 단축에 대한 요청은 동일한 ShortURL로 응답
+- URL 단축 시 Cache 이용
 
-2. URL 리다이렉션
+### 2. URL 리다이렉트
+#### Sequence Diagram
 ```mermaid
 sequenceDiagram
 actor user as Client
@@ -63,3 +68,5 @@ else Cache에 (Key: ShortUrl, Value: 원본 URL)이 없을 경우
     end
 end
 ```
+- 단축 URL을 입력받으면 원본 URL로 리다이렉트
+- URL 리다이렉트 시 Cache 이용
