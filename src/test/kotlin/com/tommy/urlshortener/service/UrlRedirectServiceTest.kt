@@ -1,7 +1,7 @@
 package com.tommy.urlshortener.service
 
-import com.tommy.urlshortener.common.RedisService
-import com.tommy.urlshortener.common.StringUtil
+import com.tommy.urlshortener.cache.ManagedCache
+import com.tommy.urlshortener.extension.StringUtil
 import com.tommy.urlshortener.domain.ShortenUrl
 import com.tommy.urlshortener.exception.NotFoundException
 import com.tommy.urlshortener.repository.ShortenUrlRepository
@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit
 
 @ExtendWith(MockKExtension::class)
 class UrlRedirectServiceTest(
-    @MockK private val redisService: RedisService,
+    @MockK private val managedCache: ManagedCache,
     @MockK private val shortenUrlRepository: ShortenUrlRepository,
 ) {
     @InjectMockKs
@@ -37,9 +37,9 @@ class UrlRedirectServiceTest(
 
         val redisKey = "$REDIS_KEY_PREFIX$shortUrl"
 
-        every { redisService.get<String>(redisKey) } returns null
+        every { managedCache.get<String>(redisKey) } returns null
         every { shortenUrlRepository.findByShortUrl(shortUrl) } returns shortenUrl
-        justRun { redisService.set(redisKey, shortenUrl.originUrl, 3L, TimeUnit.DAYS) }
+        justRun { managedCache.set(redisKey, shortenUrl.originUrl, 3L, TimeUnit.DAYS) }
 
         // Act
         val actual = sut.findOriginUrl(shortUrl)
@@ -48,9 +48,9 @@ class UrlRedirectServiceTest(
         assertThat(actual.originUrl).isEqualTo(shortenUrl.originUrl)
 
         verify {
-            redisService.get<String>(redisKey)
+            managedCache.get<String>(redisKey)
             shortenUrlRepository.findByShortUrl(shortUrl)
-            redisService.set(redisKey, shortenUrl.originUrl, 3L, TimeUnit.DAYS)
+            managedCache.set(redisKey, shortenUrl.originUrl, 3L, TimeUnit.DAYS)
         }
     }
 
@@ -61,7 +61,7 @@ class UrlRedirectServiceTest(
         val shortUrl = UUID.randomUUID().toString()
         val redisKey = "$REDIS_KEY_PREFIX$shortUrl"
 
-        every { redisService.get<String>(redisKey) } returns null
+        every { managedCache.get<String>(redisKey) } returns null
         every { shortenUrlRepository.findByShortUrl(shortUrl) } returns null
 
         // Act & Assert

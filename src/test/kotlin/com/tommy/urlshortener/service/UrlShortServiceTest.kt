@@ -1,7 +1,7 @@
 package com.tommy.urlshortener.service
 
-import com.tommy.urlshortener.common.RedisService
-import com.tommy.urlshortener.common.StringUtil
+import com.tommy.urlshortener.cache.ManagedCache
+import com.tommy.urlshortener.extension.StringUtil
 import com.tommy.urlshortener.domain.ShortenUrl
 import com.tommy.urlshortener.dto.ShortUrlRequest
 import com.tommy.urlshortener.repository.ShortenUrlRepository
@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit
 
 @ExtendWith(MockKExtension::class)
 class UrlShortServiceTest(
-    @MockK private val redisService: RedisService,
+    @MockK private val managedCache: ManagedCache,
     @MockK private val shortenKeyGenerator: ShortenKeyGenerator,
     @MockK private val shortUrlGenerator: ShortUrlGenerator,
     @MockK private val shortenUrlRepository: ShortenUrlRepository,
@@ -40,12 +40,12 @@ class UrlShortServiceTest(
         val generatedShortUrl = "EysI9lHD"
         val shortenUrl = ShortenUrl(shortenKey = shortenKey, originUrl = originUrl, hashedOriginUrl = hashedOriginUrl, shortUrl = generatedShortUrl)
 
-        every { redisService.get<String>(redisKey) } returns null
+        every { managedCache.get<String>(redisKey) } returns null
         every { shortenUrlRepository.findByOriginUrl(hashedOriginUrl) } returns null
         every { shortenKeyGenerator.generate(any()) } returns shortenKey
         every { shortUrlGenerator.generate(shortenKey) } returns generatedShortUrl
         every { shortenUrlRepository.save(any()) } returns shortenUrl
-        justRun { redisService.set(redisKey, shortenUrl.shortUrl, 3L, TimeUnit.DAYS) }
+        justRun { managedCache.set(redisKey, shortenUrl.shortUrl, 3L, TimeUnit.DAYS) }
 
         // Act
         val actual = sut.shorten(shortUrlRequest)

@@ -1,6 +1,6 @@
 package com.tommy.urlshortener.service
 
-import com.tommy.urlshortener.common.RedisService
+import com.tommy.urlshortener.cache.ManagedCache
 import com.tommy.urlshortener.dto.OriginUrlResponse
 import com.tommy.urlshortener.exception.NotFoundException
 import com.tommy.urlshortener.repository.ShortenUrlRepository
@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit
 @Service
 @Transactional(readOnly = true)
 class UrlRedirectService(
-    private val redisService: RedisService,
+    private val managedCache: ManagedCache,
     private val shortenUrlRepository: ShortenUrlRepository,
 ) {
     private val logger = KotlinLogging.logger { }
@@ -22,7 +22,7 @@ class UrlRedirectService(
         logger.debug { "shortUrl: [$shortUrl]" }
 
         val redisKey = "$REDIS_KEY_PREFIX$shortUrl"
-        val cachedOriginUrl = redisService.get<String>(redisKey)
+        val cachedOriginUrl = managedCache.get<String>(redisKey)
 
         return cachedOriginUrl?.let {
             OriginUrlResponse(it)
@@ -30,7 +30,7 @@ class UrlRedirectService(
             val shortenUrl = shortenUrlRepository.findByShortUrl(shortUrl) ?: throw NotFoundException(SHORTEN_URL_NOT_FOUND, shortUrl)
             val originUrl = shortenUrl.originUrl
 
-            redisService.set(redisKey, originUrl, 3L, TimeUnit.DAYS)
+            managedCache.set(redisKey, originUrl, 3L, TimeUnit.DAYS)
 
             OriginUrlResponse(originUrl)
         }

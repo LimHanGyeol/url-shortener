@@ -1,16 +1,15 @@
-package com.tommy.urlshortener.common
+package com.tommy.urlshortener.cache
 
-import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.data.redis.core.ValueOperations
-import org.springframework.stereotype.Service
+import org.springframework.stereotype.Component
 import java.util.concurrent.TimeUnit
 
-@Service
-class RedisService(
+@Component
+class ManagedCache(
     @Value("\${spring.application.name:url-shortener}")
     private val appName: String,
     private val objectMapper: ObjectMapper,
@@ -20,16 +19,25 @@ class RedisService(
 
     fun set(key: String, value: Any, ttl: Long, timeUnit: TimeUnit) {
         val redisKey = generateKey(key)
-        val serializedValue = objectMapper.writeValueAsString(value)
+        val serializedValue = objectMapper.writeValueAsString(CacheValue(value))
         valueOperations.set(redisKey, serializedValue, ttl, timeUnit)
     }
 
+    /*
+     ```
+     Jackson Kotlin Extensions 에서 아래 확장 함수로 TypeReference를 주입하고 있다.
+     CacheValue를 Wrapping하여 별도의 TypeReference 선언을 하지 않는다.
+     inline fun <reified T> jacksonTypeRef(): TypeReference<T> = object: TypeReference<T>() {}
+     inline fun <reified T> ObjectMapper.readValue(content: String): T = readValue(content, jacksonTypeRef<T>())
+     ```
+     */
     fun <T> get(key: String): T? {
         val redisKey = generateKey(key)
         val value = valueOperations.get(redisKey)
 
         return value?.let {
-            objectMapper.readValue(it, object : TypeReference<T>() {})
+            val cacheValue: CacheValue<T> = objectMapper.readValue(it)
+            cacheValue.value
         }
     }
 
@@ -54,4 +62,6 @@ class RedisService(
     private fun generateKey(key: String): String {
         return "$appName:$key"
     }
+
+    data class CacheValue<T>(val value: T)
 }

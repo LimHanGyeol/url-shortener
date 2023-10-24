@@ -1,7 +1,7 @@
 package com.tommy.urlshortener.service
 
-import com.tommy.urlshortener.common.RedisService
-import com.tommy.urlshortener.common.StringUtil
+import com.tommy.urlshortener.cache.ManagedCache
+import com.tommy.urlshortener.extension.StringUtil
 import com.tommy.urlshortener.domain.ShortenUrl
 import com.tommy.urlshortener.dto.ShortUrlRequest
 import com.tommy.urlshortener.dto.ShortUrlResponse
@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit
 @Service
 @Transactional(readOnly = true)
 class UrlShortService(
-    private val redisService: RedisService,
+    private val managedCache: ManagedCache,
     private val shortenKeyGenerator: ShortenKeyGenerator,
     private val shortUrlGenerator: ShortUrlGenerator,
     private val shortenUrlRepository: ShortenUrlRepository,
@@ -29,7 +29,7 @@ class UrlShortService(
 
         val hashedOriginUrl = StringUtil.hashToHex(originUrl)
         val redisKey = "$REDIS_KEY_PREFIX$hashedOriginUrl"
-        val cachedShortUrl = redisService.get<String>(redisKey)
+        val cachedShortUrl = managedCache.get<String>(redisKey)
 
         return cachedShortUrl?.let {
             ShortUrlResponse(it)
@@ -37,7 +37,7 @@ class UrlShortService(
             val shortenUrl = shortenUrlRepository.findByOriginUrl(hashedOriginUrl) ?: saveShortenUrl(originUrl)
             val shortUrl = shortenUrl.shortUrl
 
-            redisService.set(redisKey, shortUrl, 3L, TimeUnit.DAYS)
+            managedCache.set(redisKey, shortUrl, 3L, TimeUnit.DAYS)
 
             ShortUrlResponse(shortUrl)
         }
