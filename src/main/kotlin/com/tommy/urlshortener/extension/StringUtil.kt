@@ -1,4 +1,4 @@
-package com.tommy.urlshortener.common
+package com.tommy.urlshortener.extension
 
 import java.security.MessageDigest
 
