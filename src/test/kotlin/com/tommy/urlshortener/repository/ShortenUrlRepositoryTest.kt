@@ -1,6 +1,6 @@
 package com.tommy.urlshortener.repository
 
-import com.tommy.urlshortener.common.StringUtil
+import com.tommy.urlshortener.extension.StringUtil
 import com.tommy.urlshortener.config.UrlShortenerConfig
 import com.tommy.urlshortener.domain.ShortenUrl
 import org.assertj.core.api.Assertions.assertThat

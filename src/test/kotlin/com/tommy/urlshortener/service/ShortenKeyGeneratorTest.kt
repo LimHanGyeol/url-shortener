@@ -1,6 +1,6 @@
 package com.tommy.urlshortener.service
 
-import com.tommy.urlshortener.common.RedisService
+import com.tommy.urlshortener.cache.ManagedCache
 import com.tommy.urlshortener.exception.TooManyRequestException
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit
 
 @ExtendWith(MockKExtension::class)
 class ShortenKeyGeneratorTest(
-    @MockK private val redisService: RedisService,
+    @MockK private val managedCache: ManagedCache,
 ) {
     @InjectMockKs
     private lateinit var sut: ShortenKeyGenerator
@@ -28,8 +28,8 @@ class ShortenKeyGeneratorTest(
         // Arrange
         val timestamp = Instant.now().epochSecond
 
-        every { redisService.increment(REDIS_KEY, 1L) } returns 300
-        justRun { redisService.set(REDIS_KEY, 300, 5, TimeUnit.SECONDS) }
+        every { managedCache.increment(REDIS_KEY, 1L) } returns 300
+        justRun { managedCache.set(REDIS_KEY, 300, 5, TimeUnit.SECONDS) }
 
         // Act
         val actual = sut.generate(timestamp)
@@ -44,8 +44,8 @@ class ShortenKeyGeneratorTest(
         // Arrange
         val timestamp = Instant.now().epochSecond
 
-         every { redisService.increment(REDIS_KEY, 1L) } returns 10000
-        justRun { redisService.set(REDIS_KEY, 10000, 5, TimeUnit.SECONDS) }
+         every { managedCache.increment(REDIS_KEY, 1L) } returns 10000
+        justRun { managedCache.set(REDIS_KEY, 10000, 5, TimeUnit.SECONDS) }
 
         // Act & Assert
         assertThrows<TooManyRequestException> { sut.generate(timestamp) }
