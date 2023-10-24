@@ -1,5 +1,6 @@
-package com.tommy.urlshortener.common
+package com.tommy.urlshortener.cache
 
+import com.tommy.urlshortener.extension.StringUtil
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
