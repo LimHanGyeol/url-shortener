@@ -1,9 +1,10 @@
 package com.tommy.urlshortener.service
 
 import com.tommy.urlshortener.cache.ManagedCache
-import com.tommy.urlshortener.extension.StringUtil
 import com.tommy.urlshortener.domain.ShortenUrl
 import com.tommy.urlshortener.exception.NotFoundException
+import com.tommy.urlshortener.extension.HashAlgorithm
+import com.tommy.urlshortener.extension.toHashedHex
 import com.tommy.urlshortener.repository.ShortenUrlRepository
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
@@ -33,7 +34,7 @@ class UrlRedirectServiceTest(
         // Arrange
         val originUrl = UUID.randomUUID().toString()
         val shortUrl = "EysI9lHD"
-        val shortenUrl = ShortenUrl(shortenKey = 1696691294L, originUrl = originUrl, hashedOriginUrl = StringUtil.hashToHex(originUrl), shortUrl = shortUrl)
+        val shortenUrl = ShortenUrl(shortenKey = 1696691294L, originUrl = originUrl, hashedOriginUrl = originUrl.toHashedHex(HashAlgorithm.SHA_256), shortUrl = shortUrl)
 
         val redisKey = "$REDIS_KEY_PREFIX$shortUrl"
 
