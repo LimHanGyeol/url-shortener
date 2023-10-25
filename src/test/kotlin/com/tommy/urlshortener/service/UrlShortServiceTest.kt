@@ -1,9 +1,10 @@
 package com.tommy.urlshortener.service
 
 import com.tommy.urlshortener.cache.ManagedCache
-import com.tommy.urlshortener.extension.StringUtil
 import com.tommy.urlshortener.domain.ShortenUrl
 import com.tommy.urlshortener.dto.ShortUrlRequest
+import com.tommy.urlshortener.extension.HashAlgorithm
+import com.tommy.urlshortener.extension.toHashedHex
 import com.tommy.urlshortener.repository.ShortenUrlRepository
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
@@ -33,7 +34,7 @@ class UrlShortServiceTest(
         val originUrl = "https://github.com/LimHanGyeol/url-shortener/blob/master/src/main/kotlin/com/tommy/urlshortener/UrlShortenerApplication.kt"
         val shortUrlRequest = ShortUrlRequest(originUrl)
 
-        val hashedOriginUrl = StringUtil.hashToHex(originUrl)
+        val hashedOriginUrl = originUrl.toHashedHex(HashAlgorithm.SHA_256)
         val redisKey = "$REDIS_KEY_PREFIX$hashedOriginUrl"
 
         val shortenKey = 1696691294L

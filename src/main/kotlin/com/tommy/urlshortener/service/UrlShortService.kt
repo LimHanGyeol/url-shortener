@@ -1,10 +1,11 @@
 package com.tommy.urlshortener.service
 
 import com.tommy.urlshortener.cache.ManagedCache
-import com.tommy.urlshortener.extension.StringUtil
 import com.tommy.urlshortener.domain.ShortenUrl
 import com.tommy.urlshortener.dto.ShortUrlRequest
 import com.tommy.urlshortener.dto.ShortUrlResponse
+import com.tommy.urlshortener.extension.HashAlgorithm
+import com.tommy.urlshortener.extension.toHashedHex
 import com.tommy.urlshortener.repository.ShortenUrlRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
@@ -27,7 +28,7 @@ class UrlShortService(
         val originUrl = shortUrlRequest.originUrl
         logger.debug { "URL Shorten - originUrl: [$originUrl]" }
 
-        val hashedOriginUrl = StringUtil.hashToHex(originUrl)
+        val hashedOriginUrl = originUrl.toHashedHex(HashAlgorithm.SHA_256)
         val redisKey = "$REDIS_KEY_PREFIX$hashedOriginUrl"
         val cachedShortUrl = managedCache.get<String>(redisKey)
 
@@ -46,7 +47,7 @@ class UrlShortService(
     private fun saveShortenUrl(originUrl: String): ShortenUrl {
         val timestamp = Instant.now().epochSecond
 
-        val hashedOriginUrl = StringUtil.hashToHex(originUrl)
+        val hashedOriginUrl = originUrl.toHashedHex(HashAlgorithm.SHA_256)
 
         val shortenKey = shortenKeyGenerator.generate(timestamp)
         val generatedShortUrl = shortUrlGenerator.generate(shortenKey)
