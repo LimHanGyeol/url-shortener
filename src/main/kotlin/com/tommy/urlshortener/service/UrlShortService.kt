@@ -2,7 +2,6 @@ package com.tommy.urlshortener.service
 
 import com.tommy.urlshortener.cache.ManagedCache
 import com.tommy.urlshortener.domain.ShortenUrl
-import com.tommy.urlshortener.dto.ShortUrlRequest
 import com.tommy.urlshortener.dto.ShortUrlResponse
 import com.tommy.urlshortener.extension.HashAlgorithm
 import com.tommy.urlshortener.extension.toHashedHex
@@ -32,8 +31,8 @@ class UrlShortService(
 
         return cachedShortUrl?.let {
             ShortUrlResponse(it)
-        } ?: run { // findByHashedOriginUrl로 변경 필요
-            val shortenUrl = shortenUrlRepository.findByOriginUrl(hashedOriginUrl) ?: saveShortenUrl(originUrl)
+        } ?: run {
+            val shortenUrl = shortenUrlRepository.findByHashedOriginUrl(hashedOriginUrl) ?: saveShortenUrl(originUrl)
             val shortUrl = shortenUrl.shortUrl
 
             managedCache.set(redisKey, shortUrl, 3L, TimeUnit.DAYS)
