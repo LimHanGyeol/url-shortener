@@ -32,6 +32,7 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("io.github.oshai:kotlin-logging-jvm:5.1.0")
     implementation("commons-validator:commons-validator:1.7")
+    implementation("org.redisson:redisson-spring-boot-starter:3.24.3")
 
     implementation("com.h2database:h2:2.2.224")
 
