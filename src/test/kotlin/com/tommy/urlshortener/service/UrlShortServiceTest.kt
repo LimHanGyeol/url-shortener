@@ -32,8 +32,6 @@ class UrlShortServiceTest(
     fun `shorten origin url`() {
         // Arrange
         val originUrl = "https://github.com/LimHanGyeol/url-shortener/blob/master/src/main/kotlin/com/tommy/urlshortener/UrlShortenerApplication.kt"
-        val shortUrlRequest = ShortUrlRequest(originUrl)
-
         val hashedOriginUrl = originUrl.toHashedHex(HashAlgorithm.SHA_256)
         val redisKey = "$REDIS_KEY_PREFIX$hashedOriginUrl"
 
@@ -49,7 +47,7 @@ class UrlShortServiceTest(
         justRun { managedCache.set(redisKey, shortenUrl.shortUrl, 3L, TimeUnit.DAYS) }
 
         // Act
-        val actual = sut.shorten(shortUrlRequest)
+        val actual = sut.shorten(originUrl, hashedOriginUrl)
 
         // Assert
         assertThat(actual.shortUrl).isEqualTo(generatedShortUrl)

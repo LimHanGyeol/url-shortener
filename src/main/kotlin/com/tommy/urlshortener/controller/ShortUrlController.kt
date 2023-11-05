@@ -4,7 +4,7 @@ import com.tommy.urlshortener.dto.RedirectResponseEntity
 import com.tommy.urlshortener.dto.ShortUrlRequest
 import com.tommy.urlshortener.dto.ShortUrlResponse
 import com.tommy.urlshortener.service.UrlRedirectService
-import com.tommy.urlshortener.service.UrlShortService
+import com.tommy.urlshortener.service.UrlShortenFacade
 import com.tommy.urlshortener.service.UrlValidator
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
@@ -18,7 +18,7 @@ import jakarta.validation.Valid
 @RestController
 class ShortUrlController(
     private val urlValidator: UrlValidator,
-    private val urlShortService: UrlShortService,
+    private val urlShortenFacade: UrlShortenFacade,
     private val urlRedirectService: UrlRedirectService,
 ) {
 
@@ -26,7 +26,7 @@ class ShortUrlController(
     @ResponseStatus(HttpStatus.CREATED)
     fun shortUrl(@RequestBody @Valid shortUrlRequest: ShortUrlRequest): ShortUrlResponse {
         urlValidator.validate(shortUrlRequest.originUrl)
-        return urlShortService.shorten(shortUrlRequest)
+        return urlShortenFacade.shortUrlWithLock(shortUrlRequest)
     }
 
     @GetMapping("/redirect/{shortUrl}")
