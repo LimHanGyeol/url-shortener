@@ -2,7 +2,6 @@ package com.tommy.urlshortener.service
 
 import com.tommy.urlshortener.cache.ManagedCache
 import com.tommy.urlshortener.domain.ShortenUrl
-import com.tommy.urlshortener.dto.ShortUrlRequest
 import com.tommy.urlshortener.extension.HashAlgorithm
 import com.tommy.urlshortener.extension.toHashedHex
 import com.tommy.urlshortener.repository.ShortenUrlRepository
@@ -11,6 +10,7 @@ import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.justRun
+import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -40,7 +40,7 @@ class UrlShortServiceTest(
         val shortenUrl = ShortenUrl(shortenKey = shortenKey, originUrl = originUrl, hashedOriginUrl = hashedOriginUrl, shortUrl = generatedShortUrl)
 
         every { managedCache.get<String>(redisKey) } returns null
-        every { shortenUrlRepository.findByOriginUrl(hashedOriginUrl) } returns null
+        every { shortenUrlRepository.findByHashedOriginUrl(hashedOriginUrl) } returns null
         every { shortenKeyGenerator.generate(any()) } returns shortenKey
         every { shortUrlGenerator.generate(shortenKey) } returns generatedShortUrl
         every { shortenUrlRepository.save(any()) } returns shortenUrl
@@ -51,6 +51,11 @@ class UrlShortServiceTest(
 
         // Assert
         assertThat(actual.shortUrl).isEqualTo(generatedShortUrl)
+
+        verify {
+            managedCache.get<String>(redisKey)
+            shortenUrlRepository.findByHashedOriginUrl(hashedOriginUrl)
+        }
     }
 
     companion object {

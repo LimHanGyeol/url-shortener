@@ -37,6 +37,24 @@ class ShortenUrlRepositoryTest @Autowired constructor(
     }
 
     @Test
+    @DisplayName("hashedOriginUrl이 주어질 경우 ShortenUrl Entity를 조회한다.")
+    fun `find by hashed origin url`() {
+        // Arrange
+        val originUrl = "https://github.com/LimHanGyeol/url-shortener/blob/master/src/main/kotlin/com/tommy/urlshortener/UrlShortenerApplication.kt"
+        val hashedOriginUrl = originUrl.toHashedHex(HashAlgorithm.SHA_256)
+
+        val shortenUrl = ShortenUrl(shortenKey = 1696691294L, originUrl = originUrl, hashedOriginUrl = hashedOriginUrl, shortUrl = "EysI9lHD")
+
+        sut.save(shortenUrl)
+
+        // Act
+        val actual = sut.findByHashedOriginUrl(hashedOriginUrl)
+
+        // Assert
+        assertThat(actual?.hashedOriginUrl).isEqualTo(shortenUrl.hashedOriginUrl)
+    }
+
+    @Test
     @DisplayName("shortUrl이 주어질 경우 ShortenUrl Entity를 조회한다.")
     fun `find by short url`() {
         // Arrange
