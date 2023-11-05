@@ -7,7 +7,7 @@ import com.tommy.urlshortener.dto.ShortUrlRequest
 import com.tommy.urlshortener.dto.ShortUrlResponse
 import com.tommy.urlshortener.exception.BadRequestException
 import com.tommy.urlshortener.service.UrlRedirectService
-import com.tommy.urlshortener.service.UrlShortService
+import com.tommy.urlshortener.service.UrlShortenFacade
 import com.tommy.urlshortener.service.UrlValidator
 import io.mockk.every
 import io.mockk.verify
@@ -32,7 +32,7 @@ class ShortUrlControllerTest @Autowired constructor(
     private val mockMvc: MockMvc,
     private val objectMapper: ObjectMapper,
     @MockkBean private val urlValidator: UrlValidator,
-    @MockkBean private val urlShortService: UrlShortService,
+    @MockkBean private val urlShortenFacade: UrlShortenFacade,
     @MockkBean private val urlRedirectService: UrlRedirectService,
 ) {
 
@@ -45,7 +45,7 @@ class ShortUrlControllerTest @Autowired constructor(
         val shortUrlResponse = ShortUrlResponse("EysI9lHD")
 
         every { urlValidator.validate(shortUrlRequest.originUrl) } returns true
-        every { urlShortService.shorten(shortUrlRequest) } returns shortUrlResponse
+        every { urlShortenFacade.shortUrlWithLock(shortUrlRequest) } returns shortUrlResponse
 
         // Act & Assert
         mockMvc.perform(
@@ -58,7 +58,7 @@ class ShortUrlControllerTest @Autowired constructor(
             .andExpect(jsonPath("$.shortUrl").value(shortUrlResponse.shortUrl))
 
         verify {
-            urlShortService.shorten(shortUrlRequest)
+            urlShortenFacade.shortUrlWithLock(shortUrlRequest)
         }
     }
 
@@ -86,7 +86,7 @@ class ShortUrlControllerTest @Autowired constructor(
             .andExpect(jsonPath("$.errorFields").isEmpty)
 
         verify { urlValidator.validate(originUrl) }
-        verify(exactly = 0) { urlShortService.shorten(shortUrlRequest) }
+        verify(exactly = 0) { urlShortenFacade.shortUrlWithLock(shortUrlRequest) }
     }
 
     @Test

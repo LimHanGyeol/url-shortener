@@ -24,17 +24,15 @@ class UrlShortService(
     private val logger = KotlinLogging.logger { }
 
     @Transactional
-    fun shorten(shortUrlRequest: ShortUrlRequest): ShortUrlResponse {
-        val originUrl = shortUrlRequest.originUrl
+    fun shorten(originUrl: String, hashedOriginUrl: String): ShortUrlResponse {
         logger.debug { "URL Shorten - originUrl: [$originUrl]" }
 
-        val hashedOriginUrl = originUrl.toHashedHex(HashAlgorithm.SHA_256)
         val redisKey = "$REDIS_KEY_PREFIX$hashedOriginUrl"
         val cachedShortUrl = managedCache.get<String>(redisKey)
 
         return cachedShortUrl?.let {
             ShortUrlResponse(it)
-        } ?: run {
+        } ?: run { // findByHashedOriginUrl로 변경 필요
             val shortenUrl = shortenUrlRepository.findByOriginUrl(hashedOriginUrl) ?: saveShortenUrl(originUrl)
             val shortUrl = shortenUrl.shortUrl
 
