@@ -47,3 +47,6 @@ out/
 ### 개발 환경 전용 Profile ###
 **/*-my.yml
 **/*-my.properties
+
+### Redis Binary DUmp File (dump.rdb)
+*.rdb
