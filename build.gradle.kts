@@ -40,6 +40,9 @@ dependencies {
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("com.ninja-squad:springmockk:3.1.1")
+    testImplementation("it.ozimov:embedded-redis:0.7.3") {
+        exclude("org.slf4j", "slf4j-simple")
+    }
 }
 
 tasks.withType<KotlinCompile> {
