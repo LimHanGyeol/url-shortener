@@ -1,5 +1,6 @@
 package com.tommy.urlshortener.controller
 
+import com.tommy.urlshortener.aop.MeasurePerformance
 import com.tommy.urlshortener.dto.RedirectResponseEntity
 import com.tommy.urlshortener.dto.ShortUrlRequest
 import com.tommy.urlshortener.dto.ShortUrlResponse
@@ -22,6 +23,7 @@ class ShortUrlController(
     private val urlRedirectService: UrlRedirectService,
 ) {
 
+    @MeasurePerformance
     @PostMapping("/shorten")
     @ResponseStatus(HttpStatus.CREATED)
     fun shortUrl(@RequestBody @Valid shortUrlRequest: ShortUrlRequest): ShortUrlResponse {
