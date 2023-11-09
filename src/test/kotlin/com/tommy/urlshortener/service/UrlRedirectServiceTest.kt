@@ -29,8 +29,33 @@ class UrlRedirectServiceTest(
     private lateinit var sut: UrlRedirectService
 
     @Test
-    @DisplayName("입력받은 short url로 origin url을 찾는다.")
-    fun `find origin url`() {
+    @DisplayName("Cache에 값이 있을 경우 Cache의 origin url을 찾는다.")
+    fun `find origin url by cache`() {
+        // Arrange
+        val originUrl = UUID.randomUUID().toString()
+        val shortUrl = "EysI9lHD"
+        val shortenUrl = ShortenUrl(shortenKey = 1696691294L, originUrl = originUrl, hashedOriginUrl = originUrl.toHashedHex(HashAlgorithm.SHA_256), shortUrl = shortUrl)
+
+        val redisKey = "$REDIS_KEY_PREFIX$shortUrl"
+
+        every { managedCache.get<String>(redisKey) } returns shortenUrl.originUrl
+
+        // Act
+        val actual = sut.findOriginUrl(shortUrl)
+
+        // Assert
+        assertThat(actual.originUrl).isEqualTo(shortenUrl.originUrl)
+
+        verify { managedCache.get<String>(redisKey) }
+        verify(exactly = 0) {
+            shortenUrlRepository.findByShortUrl(shortUrl)
+            managedCache.set(redisKey, shortenUrl.originUrl, 3L, TimeUnit.DAYS)
+        }
+    }
+
+    @Test
+    @DisplayName("Cache에 값이 없을 경우 입력받은 short url로 DB의 origin url을 찾는다.")
+    fun `find origin url by database`() {
         // Arrange
         val originUrl = UUID.randomUUID().toString()
         val shortUrl = "EysI9lHD"
