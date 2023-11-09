@@ -4,5 +4,5 @@ open class BaseException(
     val status: Int,
     val code: String,
     val default: String = "",
-    vararg val args: Any?,
+    vararg val args: Any? = emptyArray(),
 ) : RuntimeException()
