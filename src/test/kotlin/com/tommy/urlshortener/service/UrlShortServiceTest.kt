@@ -28,11 +28,76 @@ class UrlShortServiceTest(
     private lateinit var sut: UrlShortService
 
     @Test
-    @DisplayName("원본 URL을 단축한다.")
+    @DisplayName("Cache에 값이 있을 경우 Cache의 short url을 반환한다.")
+    fun `find short url by cache`() {
+        // Arrange
+        val originUrl = "https://github.com/LimHanGyeol/url-shortener/blob/master/src/main/kotlin/com/tommy/urlshortener/UrlShortenerApplication.kt"
+        val hashedOriginUrl = originUrl.toHashedHex(HashAlgorithm.SHA_256)
+
+        val redisKey = "$REDIS_KEY_PREFIX$hashedOriginUrl"
+
+        val shortUrl = "EysI9lHD"
+
+        every { managedCache.get<String>(redisKey) } returns shortUrl
+
+        // Act
+        val actual = sut.shorten(originUrl, hashedOriginUrl)
+
+        // Assert
+        assertThat(actual.shortUrl).isEqualTo(shortUrl)
+
+        verify { managedCache.get<String>(redisKey) }
+        verify(exactly = 0) {
+            shortenUrlRepository.findByHashedOriginUrl(hashedOriginUrl)
+            shortenKeyGenerator.generate(any())
+            shortUrlGenerator.generate(any())
+            shortenUrlRepository.save(any())
+            managedCache.set(redisKey, any(), 3L, TimeUnit.DAYS)
+        }
+    }
+
+    @Test
+    @DisplayName("Cache에 값이 없을 경우 DB에 origin url에 해당하는 short url을 반환한다.")
+    fun `find short url by database`() {
+        // Arrange
+        val originUrl = "https://github.com/LimHanGyeol/url-shortener/blob/master/src/main/kotlin/com/tommy/urlshortener/UrlShortenerApplication.kt"
+        val hashedOriginUrl = originUrl.toHashedHex(HashAlgorithm.SHA_256)
+
+        val redisKey = "$REDIS_KEY_PREFIX$hashedOriginUrl"
+
+        val shortUrl = "EysI9lHD"
+        val shortenUrl = ShortenUrl(shortenKey = 1696691294L, originUrl = originUrl, hashedOriginUrl = hashedOriginUrl, shortUrl = shortUrl)
+
+        every { managedCache.get<String>(redisKey) } returns null
+        every { shortenUrlRepository.findByHashedOriginUrl(hashedOriginUrl) } returns shortenUrl
+        justRun { managedCache.set(redisKey, shortenUrl.shortUrl, 3L, TimeUnit.DAYS) }
+
+        // Act
+        val actual = sut.shorten(originUrl, hashedOriginUrl)
+
+        // Assert
+        assertThat(actual.shortUrl).isEqualTo(shortUrl)
+
+        verify {
+            managedCache.get<String>(redisKey)
+            shortenUrlRepository.findByHashedOriginUrl(hashedOriginUrl)
+            managedCache.set(redisKey, shortenUrl.shortUrl, 3L, TimeUnit.DAYS)
+        }
+
+        verify(exactly = 0) {
+            shortenKeyGenerator.generate(any())
+            shortUrlGenerator.generate(any())
+            shortenUrlRepository.save(any())
+        }
+    }
+
+    @Test
+    @DisplayName("Cache에 값이 없고, DB에도 값이 없을 경우 origin url을 단축하여 반환한다.")
     fun `shorten origin url`() {
         // Arrange
         val originUrl = "https://github.com/LimHanGyeol/url-shortener/blob/master/src/main/kotlin/com/tommy/urlshortener/UrlShortenerApplication.kt"
         val hashedOriginUrl = originUrl.toHashedHex(HashAlgorithm.SHA_256)
+
         val redisKey = "$REDIS_KEY_PREFIX$hashedOriginUrl"
 
         val shortenKey = 1696691294L
@@ -43,7 +108,7 @@ class UrlShortServiceTest(
         every { shortenUrlRepository.findByHashedOriginUrl(hashedOriginUrl) } returns null
         every { shortenKeyGenerator.generate(any()) } returns shortenKey
         every { shortUrlGenerator.generate(shortenKey) } returns generatedShortUrl
-        every { shortenUrlRepository.save(any()) } returns shortenUrl
+        every { shortenUrlRepository.save(shortenUrl) } returns shortenUrl
         justRun { managedCache.set(redisKey, shortenUrl.shortUrl, 3L, TimeUnit.DAYS) }
 
         // Act
@@ -55,6 +120,10 @@ class UrlShortServiceTest(
         verify {
             managedCache.get<String>(redisKey)
             shortenUrlRepository.findByHashedOriginUrl(hashedOriginUrl)
+            shortenKeyGenerator.generate(any())
+            shortUrlGenerator.generate(shortenKey)
+            shortenUrlRepository.save(shortenUrl)
+            managedCache.set(redisKey, shortenUrl.shortUrl, 3L, TimeUnit.DAYS)
         }
     }
 
