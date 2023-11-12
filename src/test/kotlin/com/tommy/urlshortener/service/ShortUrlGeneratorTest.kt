@@ -34,4 +34,17 @@ class ShortUrlGeneratorTest {
         // Act & Assert
         assertThrows<InternalServerException> { sut.generate(shortenKey) }
     }
+
+    @Test
+    @DisplayName("shortenKey의 값이 0일 경우 A로 단축한다.")
+    fun `shorten key is zero`() {
+        // Arrange
+        val shortenKey = 0L
+
+        // Act
+        val actual = sut.generate(shortenKey)
+
+        // Assert
+        assertThat(actual).isEqualTo("A")
+    }
 }
